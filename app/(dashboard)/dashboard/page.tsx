@@ -1,66 +1,88 @@
-export default function DashboardPage() {
+import CreateClubForm from '@/components/CreateClubForm'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function DashboardPage() {
+  // 1. Conectar a Supabase y obtener usuario
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth/login')
+  }
+
+  // 2. Buscar si este usuario ya pertenece a algún club
+  const { data: membership, error } = await supabase
+    .from('memberships')
+    .select('*, clubs(*)') // Traemos también los datos del club relacionado
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  // Debug: Log de errores de RLS o permisos
+  if (error) {
+    console.log('Error fetching membership:', error)
+  }
+
+  // 3. LOGICA CONDICIONAL (El "Gatekeeper")
+  
+  // CASO A: Usuario Nuevo (Sin Club) -> Mostrar Formulario de Onboarding
+  if (!membership) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+        <CreateClubForm />
+      </div>
+    )
+  }
+
+  // CASO B: Usuario con Club -> Mostrar Dashboard Real
+  // (Aquí accedemos a los datos reales del club)
+  const clubName = membership.clubs?.name || 'Tu Club'
+  const userRole = membership.role === 'owner' ? 'Dueño' : 'Miembro'
+
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{clubName}</h1>
         <p className="text-gray-600 mt-2">
-          Bienvenido a tu panel de control del club de running
+          Bienvenido, {userRole}. Aquí está el resumen de tu club.
         </p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid (Mantuvimos tu diseño original) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Miembros Activos"
-          value="124"
-          change="+12%"
+          title="Miembros Totales"
+          value="1" 
+          change="¡Eres el primero!"
           positive
         />
         <StatCard
-          title="Sesiones este Mes"
-          value="18"
-          change="+5%"
-          positive
+          title="Próximo Evento"
+          value="Sin programar"
+          change="Crear evento"
+          positive={false}
         />
-        <StatCard
-          title="Asistencia Promedio"
-          value="85%"
-          change="+3%"
-          positive
-        />
-        <StatCard
-          title="Próxima Sesión"
-          value="Hoy 6:00 PM"
-          change="En 4 horas"
-        />
+        {/* Aquí puedes agregar más cards reales conectadas a la DB */}
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Actividad Reciente
-        </h2>
-        <div className="space-y-4">
-          <ActivityItem
-            title="Nueva inscripción"
-            description="Juan Pérez se unió al club"
-            time="Hace 2 horas"
-          />
-          <ActivityItem
-            title="Sesión completada"
-            description="Entrenamiento de velocidad - 15 asistentes"
-            time="Hace 5 horas"
-          />
-          <ActivityItem
-            title="Nuevo registro"
-            description="María García registró un nuevo récord personal"
-            time="Ayer"
-          />
+      {/* Placeholder de Actividad */}
+      <div className="bg-white rounded-lg shadow p-6 text-center py-12">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Todo listo para empezar
+          </h2>
+          <p className="text-gray-500">
+            Ya tienes tu club creado. El siguiente paso es invitar a tus corredores o crear tu primer entrenamiento.
+          </p>
         </div>
       </div>
     </div>
   )
 }
+
+// --- Componentes UI (Los mantuve igual para que no se rompa el diseño) ---
 
 function StatCard({
   title,
@@ -88,27 +110,6 @@ function StatCard({
       >
         {change}
       </p>
-    </div>
-  )
-}
-
-function ActivityItem({
-  title,
-  description,
-  time,
-}: {
-  title: string
-  description: string
-  time: string
-}) {
-  return (
-    <div className="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-      <div className="w-2 h-2 bg-blue-600 rounded-full mt-2" />
-      <div className="flex-1">
-        <p className="font-medium text-gray-900">{title}</p>
-        <p className="text-sm text-gray-600">{description}</p>
-      </div>
-      <p className="text-sm text-gray-500">{time}</p>
     </div>
   )
 }

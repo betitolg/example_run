@@ -36,70 +36,62 @@ export async function createClubAction(
     }
   }
 
-  try {
-    // 3. Transacción: Crear club
-    const { data: club, error: clubError } = await supabase
-      .from('clubs')
-      .insert({
-        name,
-        slug,
-      })
-      .select('id')
-      .single()
+  // 3. Transacción: Crear club
+  const { data: club, error: clubError } = await supabase
+    .from('clubs')
+    .insert({
+      name,
+      slug,
+    })
+    .select('id')
+    .single()
 
-    if (clubError) {
-      // Manejo de error de slug duplicado (código Postgres 23505)
-      if (clubError.code === '23505') {
-        return {
-          success: false,
-          error: 'Este URL de club ya está ocupado',
-        }
-      }
-
-      console.error('Error al crear club:', clubError)
+  if (clubError) {
+    // Manejo de error de slug duplicado (código Postgres 23505)
+    if (clubError.code === '23505') {
       return {
         success: false,
-        error: 'Error al crear el club',
+        error: 'Este URL de club ya está ocupado',
       }
     }
 
-    if (!club) {
-      return {
-        success: false,
-        error: 'No se pudo crear el club',
-      }
-    }
-
-    // 4. Transacción: Crear membresía del owner
-    const { error: membershipError } = await supabase
-      .from('memberships')
-      .insert({
-        club_id: club.id,
-        user_id: user.id,
-        role: 'owner',
-        status: 'active',
-      })
-
-    if (membershipError) {
-      console.error('Error al crear membresía:', membershipError)
-      
-      // Si falla la membresía, idealmente deberíamos hacer rollback del club
-      // pero Supabase no soporta transacciones multi-statement desde el cliente
-      // En producción, esto debería manejarse con una función de base de datos
-      return {
-        success: false,
-        error: 'Error al asignar permisos de owner',
-      }
-    }
-
-    // 5. Revalidar y redirigir
-    revalidatePath('/dashboard')
-    redirect('/dashboard')
-  } catch (error) {
-    console.error('Error inesperado:', error)
+    console.error('Error al crear club:', clubError)
     return {
       success: false,
-      error: 'Error inesperado al crear el club',
+      error: 'Error al crear el club',
     }
   }
+
+  if (!club) {
+    return {
+      success: false,
+      error: 'No se pudo crear el club',
+    }
+  }
+
+  // 4. Transacción: Crear membresía del owner
+  const { error: membershipError } = await supabase
+    .from('memberships')
+    .insert({
+      club_id: club.id,
+      user_id: user.id,
+      role: 'owner',
+      status: 'active',
+    })
+
+  if (membershipError) {
+    console.error('Error al crear membresía:', membershipError)
+    
+    // Si falla la membresía, idealmente deberíamos hacer rollback del club
+    // pero Supabase no soporta transacciones multi-statement desde el cliente
+    // En producción, esto debería manejarse con una función de base de datos
+    return {
+      success: false,
+      error: 'Error al asignar permisos de owner',
+    }
+  }
+
+  // 5. Revalidar y redirigir
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
 }
