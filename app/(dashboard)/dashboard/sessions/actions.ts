@@ -88,3 +88,88 @@ export async function createSessionAction(
   revalidatePath('/dashboard/sessions')
   redirect('/dashboard/sessions')
 }
+
+export async function toggleAttendance(
+  eventId: string,
+  userId: string,
+  status: string
+): Promise<{ success: boolean; error?: string }> {
+  // 1. Verificar autenticación
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      success: false,
+      error: 'No hay sesión de usuario activa',
+    }
+  }
+
+  // 2. Obtener el evento y su club_id
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('club_id')
+    .eq('id', eventId)
+    .single()
+
+  if (eventError || !event) {
+    return {
+      success: false,
+      error: 'Evento no encontrado',
+    }
+  }
+
+  // 3. Verificar que el usuario actual sea owner o coach del club
+  const { data: membership, error: membershipError } = await supabase
+    .from('memberships')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('club_id', event.club_id)
+    .single()
+
+  if (membershipError || !membership) {
+    return {
+      success: false,
+      error: 'No tienes permisos para gestionar asistencia',
+    }
+  }
+
+  if (membership.role !== 'owner' && membership.role !== 'coach') {
+    return {
+      success: false,
+      error: 'Solo los owners y coaches pueden gestionar asistencia',
+    }
+  }
+
+  // 4. Upsert en la tabla attendance
+  const { error: upsertError } = await supabase.from('attendance').upsert(
+    {
+      event_id: eventId,
+      user_id: userId,
+      status: status,
+      check_in_time: new Date().toISOString(),
+    },
+    {
+      onConflict: 'event_id,user_id',
+    }
+  )
+
+  if (upsertError) {
+    console.error('Error al actualizar asistencia:', upsertError)
+    return {
+      success: false,
+      error: 'Error al actualizar la asistencia',
+    }
+  }
+
+  // 5. Revalidar la página de detalle de la sesión
+  revalidatePath(`/dashboard/sessions/${eventId}`, 'page')
+  revalidatePath('/dashboard/sessions', 'page')
+
+  return {
+    success: true,
+  }
+}

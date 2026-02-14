@@ -1,4 +1,5 @@
 import InviteModal from './InviteModal'
+import MemberActionsMenu from './MemberActionsMenu'
 import { UserIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
@@ -15,10 +16,10 @@ export default async function MembersPage() {
     redirect('/auth/login')
   }
 
-  // 2. Obtener club_id del usuario (toma el primero si hay múltiples)
+  // 2. Obtener club_id y role del usuario (toma el primero si hay múltiples)
   const { data: memberships } = await supabase
     .from('memberships')
-    .select('club_id, clubs(slug)')
+    .select('club_id, role, clubs(slug)')
     .eq('user_id', user.id)
     .limit(1)
 
@@ -27,6 +28,8 @@ export default async function MembersPage() {
   if (!userMembership) {
     redirect('/dashboard')
   }
+
+  const isOwner = userMembership.role === 'owner'
 
   // Supabase retorna clubs como array, tomar el primero
   const clubs = userMembership.clubs as any
@@ -85,110 +88,156 @@ export default async function MembersPage() {
           </div>
         </div>
       ) : (
-        /* Members Table */
+        /* Members Table - Diseño Moderno */
         <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-800">
-              <thead className="bg-slate-800/50">
+              {/* Header con diseño moderno */}
+              <thead className="bg-slate-800/70">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                    Miembro
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Usuario
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-300 uppercase tracking-wider">
                     Rol
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-300 uppercase tracking-wider">
                     Estado
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-300 uppercase tracking-wider">
                     Fecha de Ingreso
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-slate-900 divide-y divide-slate-800">
-                {members.map((member) => (
-                  <tr key={member.id} className="hover:bg-slate-800/50 transition-colors">
-                    {/* Avatar + Name */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold shadow-lg shadow-orange-500/30">
-                            {(() => {
-                              const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles
-                              return profile?.full_name?.[0]?.toUpperCase() ||
-                                profile?.email?.[0]?.toUpperCase() ||
-                                'U'
-                            })()}
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-slate-50">
-                            {(() => {
-                              const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles
-                              return profile?.full_name || 'Sin nombre'
-                            })()}
-                          </div>
-                          <div className="text-sm text-slate-400">
-                            {(() => {
-                              const profile = Array.isArray(member.profiles) ? member.profiles[0] : member.profiles
-                              return profile?.email
-                            })()}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
+              <tbody className="bg-slate-900 divide-y divide-slate-800/50">
+                {members.map((member) => {
+                  const profile = Array.isArray(member.profiles) 
+                    ? member.profiles[0] 
+                    : member.profiles
+                  
+                  const memberName = profile?.full_name || 'Sin nombre'
+                  const memberEmail = profile?.email || ''
+                  const memberInitial = memberName[0]?.toUpperCase() || memberEmail[0]?.toUpperCase() || 'U'
+                  const isCurrentUser = profile?.id === user.id
 
-                    {/* Role */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          member.role === 'owner'
-                            ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                  return (
+                    <tr 
+                      key={member.id} 
+                      className="hover:bg-slate-800/30 transition-all duration-150"
+                    >
+                      {/* Avatar + Name + Email */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-4">
+                          {/* Avatar redondo con gradiente */}
+                          <div className="relative">
+                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-orange-500/30 ring-2 ring-slate-800">
+                              {memberInitial}
+                            </div>
+                            {/* Indicador de usuario actual */}
+                            {isCurrentUser && (
+                              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900"></div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-slate-50 flex items-center gap-2">
+                              {memberName}
+                              {isCurrentUser && (
+                                <span className="text-xs text-slate-400 font-normal">(Tú)</span>
+                              )}
+                            </div>
+                            <div className="text-sm text-slate-400">
+                              {memberEmail}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Role Badge - Colores mejorados */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1.5 inline-flex text-xs font-bold rounded-full ${
+                            member.role === 'owner'
+                              ? 'bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border border-yellow-500/40 shadow-lg shadow-yellow-500/10'
+                              : member.role === 'coach'
+                              ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/40 shadow-lg shadow-cyan-500/10'
+                              : 'bg-slate-700/50 text-slate-300 border border-slate-600/50'
+                          }`}
+                        >
+                          {member.role === 'owner'
+                            ? '👑 Dueño'
                             : member.role === 'coach'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                            : 'bg-slate-700 text-slate-300 border border-slate-600'
-                        }`}
-                      >
-                        {member.role === 'owner'
-                          ? 'Dueño'
-                          : member.role === 'coach'
-                          ? 'Coach'
-                          : 'Corredor'}
-                      </span>
-                    </td>
+                            ? '🎯 Coach'
+                            : '🏃 Corredor'}
+                        </span>
+                      </td>
 
-                    {/* Status */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          member.status === 'active'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                        }`}
-                      >
-                        {member.status === 'active' ? 'Activo' : 'Pendiente'}
-                      </span>
-                    </td>
+                      {/* Status Badge */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1.5 inline-flex text-xs font-bold rounded-full ${
+                            member.status === 'active'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/40 shadow-lg shadow-green-500/10'
+                              : 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-lg shadow-red-500/10'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              member.status === 'active' ? 'bg-green-400' : 'bg-red-400'
+                            }`}></span>
+                            {member.status === 'active' ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </span>
+                      </td>
 
-                    {/* Joined Date */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                      {new Date(member.joined_at).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </td>
-                  </tr>
-                ))}
+                      {/* Joined Date */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        {new Date(member.joined_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+
+                      {/* Actions Menu */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <MemberActionsMenu
+                          memberId={member.id}
+                          memberName={memberName}
+                          currentRole={member.role as 'owner' | 'coach' | 'runner'}
+                          isCurrentUser={isCurrentUser}
+                          isOwner={isOwner}
+                        />
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
-          {/* Table Footer */}
+          {/* Table Footer con estadísticas */}
           <div className="bg-slate-800/50 px-6 py-4 border-t border-slate-800">
-            <p className="text-sm text-slate-400">
-              Total de miembros: <span className="font-semibold text-orange-500">{members.length}</span>
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-400">
+                Total de miembros: <span className="font-bold text-orange-500">{members.length}</span>
+              </p>
+              <div className="flex items-center gap-4 text-xs text-slate-500">
+                <span>
+                  Owners: {members.filter(m => m.role === 'owner').length}
+                </span>
+                <span>•</span>
+                <span>
+                  Coaches: {members.filter(m => m.role === 'coach').length}
+                </span>
+                <span>•</span>
+                <span>
+                  Runners: {members.filter(m => m.role === 'runner').length}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
