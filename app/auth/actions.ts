@@ -18,6 +18,10 @@ export async function signup(
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
+  const next = formData.get('next') as string
+  
+  // Validar que next sea una ruta interna (seguridad)
+  const safeNext = next && next.startsWith('/') ? next : '/dashboard'
 
   if (!email || !password) {
     return {
@@ -58,9 +62,9 @@ export async function signup(
     }
   }
 
-  // Revalidar y redirigir al dashboard
+  // Revalidar y redirigir
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeNext)
 }
 
 export async function login(
@@ -71,6 +75,10 @@ export async function login(
 
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const next = formData.get('next') as string
+  
+  // Validar que next sea una ruta interna (seguridad)
+  const safeNext = next && next.startsWith('/') ? next : '/dashboard'
 
   if (!email || !password) {
     return {
@@ -93,5 +101,5 @@ export async function login(
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(safeNext)
 }

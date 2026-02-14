@@ -1,8 +1,8 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 interface SessionResult {
   success: boolean
@@ -24,12 +24,14 @@ export async function createSessionAction(
     throw new Error('No hay sesión de usuario activa')
   }
 
-  // 2. Obtener club_id del usuario y verificar rol
-  const { data: membership, error: membershipError } = await supabase
+  // 2. Obtener club_id del usuario (toma el primero si hay múltiples)
+  const { data: memberships, error: membershipError } = await supabase
     .from('memberships')
     .select('club_id, role')
     .eq('user_id', user.id)
-    .maybeSingle()
+    .limit(1)
+
+  const membership = memberships && memberships.length > 0 ? memberships[0] : null
 
   if (membershipError || !membership) {
     return {

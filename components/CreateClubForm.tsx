@@ -46,10 +46,10 @@ export default function CreateClubForm() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Crear Nuevo Club</h2>
-        <p className="text-gray-600 mt-2">
+        <h2 className="text-2xl font-bold text-slate-50">Crear Nuevo Club</h2>
+        <p className="text-slate-400 mt-2">
           Configura tu club de running y comienza a gestionar tu comunidad
         </p>
       </div>
@@ -57,7 +57,7 @@ export default function CreateClubForm() {
       <form action={formAction} className="space-y-6">
         {/* Error Message */}
         {state?.error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="p-4 bg-red-500/10 border border-red-500/50 rounded-xl">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
@@ -73,7 +73,7 @@ export default function CreateClubForm() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-800">{state.error}</p>
+                <p className="text-sm text-red-400">{state.error}</p>
               </div>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function CreateClubForm() {
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-slate-300 mb-2"
           >
             Nombre del Club
           </label>
@@ -94,11 +94,11 @@ export default function CreateClubForm() {
             required
             value={clubName}
             onChange={handleNameChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-slate-50 placeholder-slate-500 transition-colors"
             placeholder="Ej: Corredores de Lima"
             disabled={isPending}
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-slate-500">
             El nombre público de tu club de running
           </p>
         </div>
@@ -107,12 +107,12 @@ export default function CreateClubForm() {
         <div>
           <label
             htmlFor="slug"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-slate-300 mb-2"
           >
             URL del Club (Slug)
           </label>
           <div className="flex items-center">
-            <span className="inline-flex items-center px-3 py-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+            <span className="inline-flex items-center px-3 py-3 rounded-l-lg border border-r-0 border-slate-700 bg-slate-800 text-slate-400 text-sm">
               tuapp.com/club/
             </span>
             <input
@@ -122,23 +122,23 @@ export default function CreateClubForm() {
               required
               value={slug}
               onChange={handleSlugChange}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-r-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-slate-50 placeholder-slate-500 transition-colors"
               placeholder="corredores-de-lima"
               disabled={isPending}
             />
           </div>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-slate-500">
             Se genera automáticamente desde el nombre. Solo letras minúsculas,
             números y guiones.
           </p>
         </div>
 
         {/* Submit Button */}
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="px-6 py-3 text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors font-medium"
             disabled={isPending}
           >
             Cancelar
@@ -146,7 +146,7 @@ export default function CreateClubForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 focus:ring-4 focus:ring-orange-500/50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-orange-500/30"
           >
             {isPending ? (
               <>
@@ -181,14 +181,14 @@ export default function CreateClubForm() {
 
       {/* Preview */}
       {clubName && (
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm font-medium text-blue-900 mb-1">
+        <div className="mt-8 p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+          <p className="text-sm font-medium text-orange-400 mb-1">
             Vista previa:
           </p>
-          <p className="text-sm text-blue-700">
-            <span className="font-semibold">{clubName}</span>
+          <p className="text-sm text-slate-300">
+            <span className="font-semibold text-slate-50">{clubName}</span>
             <br />
-            <span className="text-blue-600">
+            <span className="text-orange-400">
               URL: tuapp.com/club/{slug || '...'}
             </span>
           </p>

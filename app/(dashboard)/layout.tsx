@@ -1,14 +1,15 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
-import Link from 'next/link'
 import {
-  HomeIcon,
-  UsersIcon,
+  ArrowRightOnRectangleIcon,
   CalendarIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
+  HomeIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline'
+
+import Link from 'next/link'
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 
 export default async function DashboardLayout({
   children,
@@ -26,12 +27,12 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-slate-950">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Running Club</h1>
+        <div className="h-16 flex items-center px-6 border-b border-slate-800">
+          <h1 className="text-xl font-bold text-orange-500">Running Club</h1>
         </div>
 
         {/* Navigation */}
@@ -54,13 +55,13 @@ export default async function DashboardLayout({
         </nav>
 
         {/* User Info & Logout */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold shadow-lg shadow-orange-500/30">
               {user.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-slate-50 truncate">
                 {user.email}
               </p>
             </div>
@@ -68,7 +69,7 @@ export default async function DashboardLayout({
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-slate-50 rounded-md transition-colors"
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5" />
               Cerrar Sesión
@@ -99,9 +100,9 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
+      className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-orange-500 rounded-md transition-colors group"
     >
-      <Icon className="w-5 h-5" />
+      <Icon className="w-5 h-5 group-hover:text-orange-500" />
       {children}
     </Link>
   )

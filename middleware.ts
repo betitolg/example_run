@@ -29,6 +29,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Public routes: /, /club/*, and any route not explicitly protected below
+  // These routes are accessible without authentication
+
   // Protected routes - redirect to login if not authenticated
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
     const redirectUrl = request.nextUrl.clone()

@@ -17,12 +17,14 @@ export default async function SessionsPage() {
     redirect('/auth/login')
   }
 
-  // 2. Obtener club_id del usuario
-  const { data: membership } = await supabase
+  // 2. Obtener club_id del usuario (toma el primero si hay múltiples)
+  const { data: memberships } = await supabase
     .from('memberships')
     .select('club_id, role')
     .eq('user_id', user.id)
-    .maybeSingle()
+    .limit(1)
+
+  const membership = memberships && memberships.length > 0 ? memberships[0] : null
 
   if (!membership) {
     redirect('/dashboard')
@@ -39,14 +41,14 @@ export default async function SessionsPage() {
   const canCreateSessions = membership.role === 'owner' || membership.role === 'coach'
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-slate-950 p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-slate-50">
             Sesiones de Entrenamiento
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-slate-400 mt-2">
             Gestiona los entrenamientos de tu club
           </p>
         </div>
@@ -54,7 +56,7 @@ export default async function SessionsPage() {
         {canCreateSessions && (
           <Link
             href="/dashboard/sessions/new"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+            className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all font-semibold flex items-center gap-2 shadow-lg shadow-orange-500/30"
           >
             <CalendarIcon className="w-5 h-5" />
             Nueva Sesión
@@ -64,15 +66,15 @@ export default async function SessionsPage() {
 
       {/* Empty State */}
       {!events || events.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-12 text-center">
           <div className="max-w-md mx-auto">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CalendarIcon className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CalendarIcon className="w-8 h-8 text-orange-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl font-semibold text-slate-50 mb-2">
               No hay entrenamientos programados
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-slate-400 mb-6">
               {canCreateSessions
                 ? 'Comienza creando tu primera sesión de entrenamiento'
                 : 'Aún no hay sesiones programadas por los coaches'}
@@ -80,7 +82,7 @@ export default async function SessionsPage() {
             {canCreateSessions && (
               <Link
                 href="/dashboard/sessions/new"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all font-semibold shadow-lg shadow-orange-500/30"
               >
                 <CalendarIcon className="w-5 h-5" />
                 Crear Primera Sesión
@@ -113,9 +115,9 @@ function EventCard({ event }: { event: Event }) {
   const weekday = startDate.toLocaleDateString('es-ES', { weekday: 'long' })
 
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl hover:border-orange-500/50 transition-all overflow-hidden">
       {/* Date Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4">
         <div className="flex items-center gap-4">
           <div className="text-center">
             <div className="text-4xl font-bold">{dayNumber}</div>
@@ -133,18 +135,18 @@ function EventCard({ event }: { event: Event }) {
 
       {/* Event Details */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-lg mb-2">
+        <h3 className="font-semibold text-slate-50 text-lg mb-2">
           {event.title}
         </h3>
 
         {event.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+          <p className="text-sm text-slate-400 mb-3 line-clamp-2">
             {event.description}
           </p>
         )}
 
         {event.location_name && (
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
             <MapPinIcon className="w-4 h-4" />
             <span>{event.location_name}</span>
           </div>
@@ -153,7 +155,7 @@ function EventCard({ event }: { event: Event }) {
 
       {/* Footer */}
       <div className="px-4 pb-4">
-        <button className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
+        <button className="w-full px-4 py-2 border border-slate-700 rounded-full hover:bg-slate-800 hover:border-orange-500/50 transition-all text-sm font-medium text-slate-300 hover:text-orange-500">
           Ver Detalles
         </button>
       </div>
