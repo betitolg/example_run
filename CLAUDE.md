@@ -4,11 +4,70 @@ This file provides context for AI assistants working in this repository.
 
 ## Project Overview
 
-**running-club-saas** is a multi-tenant SaaS application for managing running clubs. Club owners and coaches can create clubs, invite members, schedule training sessions, and track attendance. Members can join clubs via public invite links.
+**RunClub SaaS** is a multi-tenant SaaS platform for the integral management of running clubs. It combines an admin panel for club managers with a member-facing portal/app, creating a connected ecosystem that fosters community, simplifies payments, and turns training into a social, gamified experience.
+
+**Value proposition:** One platform to manage members, collect fees, organize events, and motivate runners with challenges and rankings — no spreadsheets or scattered apps.
+
+**Target market:** Latin America and Spain. More than 15,000 active running clubs in the region lack a specialized tool. Clubs are the tenants; runners are the end users.
 
 The UI language is **Spanish** — all user-facing text, code comments, and display strings should be written in Spanish.
 
 Multi-tenant isolation is enforced at the database layer: every table scopes data by `club_id`, and Supabase Row Level Security (RLS) policies ensure users can only access data belonging to their club(s).
+
+---
+
+## Product Modules
+
+The platform is divided into four MVP modules plus planned future phases. Use this map when deciding where new features belong.
+
+### MVP Modules (Phase 1 — current focus)
+
+| Module | Key features | DB tables involved |
+|---|---|---|
+| **Member Management** | Registration, profiles, history, categories, roles, CSV export | `profiles`, `memberships`, `clubs` |
+| **Payments & Subscriptions** | Recurring plans (monthly/quarterly/annual), automatic billing, financial dashboard, invoices | *(planned: `subscriptions`, `payments`)* |
+| **Events & Races** | Event creation with capacity/price, registrations, results, auto-generated PDF certificates, public calendar | `events`, `attendance` |
+| **Gamification** | Points (km, events, streaks, recruiting), global/category rankings, monthly challenges, badges, social leaderboard | *(planned: `points`, `challenges`, `badges`)* |
+
+### Future Phases
+
+| Phase | Period | Key deliverables |
+|---|---|---|
+| Phase 2 — Growth | Months 4–6 | iOS/Android app (React Native + Expo), analytics dashboard, GPS routes, Strava/Garmin integrations |
+| Phase 3 — Scale | Months 7–12 | Club marketplace, white-label for federations, public API, integration with race timing systems |
+
+### Domain Terminology
+
+Use these Spanish terms consistently throughout the codebase and UI:
+
+| Term | Meaning |
+|---|---|
+| **club** | The tenant/organisation (a running club) |
+| **corredor / miembro** | A runner / club member |
+| **admin / gestor** | Club administrator |
+| **entrenador** | Coach (role between admin and runner) |
+| **sesión / evento** | Training session or race event |
+| **asistencia** | Attendance |
+| **cuota** | Membership fee |
+| **reto** | Monthly gamification challenge |
+| **insignia** | Achievement badge |
+| **racha** | Activity streak |
+| **puntos** | Points earned through activity |
+
+---
+
+## Pricing Model
+
+Understanding the pricing tiers helps when building plan-gated features:
+
+| Plan | Price | Members | Notes |
+|---|---|---|---|
+| Gratis | $0/mo | ≤ 20 | Basic features, RunClub branding |
+| Starter | $29/mo | ≤ 75 | Payments, events, gamification |
+| Pro | $79/mo | ≤ 300 | Analytics, mobile app, priority support |
+| Enterprise | $199+/mo | Unlimited | White-label, API, dedicated manager |
+
+When implementing plan-gated features, add a `plan` field check on the club record. Always degrade gracefully — show an upgrade prompt rather than an error.
 
 ---
 
@@ -204,9 +263,23 @@ See `types/database.ts` for the complete typed schema and `SUPABASE_SETUP.md` fo
 
 ## What Does Not Exist Yet
 
+### Engineering tooling
 - **No test suite** — no Jest, Vitest, or Playwright installed.
 - **No Prettier** — no code formatter is configured; only ESLint is set up.
 - **No pre-commit hooks** — no Husky or lint-staged.
 - **No CI/CD pipeline** — no GitHub Actions or other automation.
 
 When adding these, follow the existing ESLint flat config pattern (`eslint.config.mjs`).
+
+### Planned product modules (not yet built)
+These are on the roadmap. Do not implement them speculatively — wait for an explicit task:
+
+- **Payments** — Stripe integration for recurring subscriptions; regional gateways (Culqi for Peru, Conekta for Mexico)
+- **Gamification tables** — `points`, `challenges`, `badges` tables and ranking logic
+- **PDF generation** — participation certificates for events
+- **Mobile app** — React Native + Expo (Phase 2)
+- **Analytics dashboard** — retention, revenue, attendance metrics (Phase 2)
+- **GPS routes** — Mapbox + Strava API integration (Phase 2)
+- **Email / SMS** — Resend (transactional email) + Twilio (WhatsApp reminders) (Phase 2)
+- **Marketplace** — sponsor listings, club store (Phase 3)
+- **White-label / API** — Enterprise tier features (Phase 3)
