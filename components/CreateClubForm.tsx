@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import Link from 'next/link'
 
 import { createClubAction } from '@/app/(dashboard)/actions'
 
@@ -135,14 +136,14 @@ export default function CreateClubForm() {
 
         {/* Submit Button */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
+          <Link
+            href="/dashboard"
             className="px-6 py-3 text-slate-300 bg-slate-800 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors font-medium"
-            disabled={isPending}
+            aria-disabled={isPending}
+            tabIndex={isPending ? -1 : undefined}
           >
             Cancelar
-          </button>
+          </Link>
           <button
             type="submit"
             disabled={isPending}

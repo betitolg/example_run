@@ -31,9 +31,9 @@ export default async function MembersPage() {
 
   const isOwner = userMembership.role === 'owner'
 
-  // Supabase retorna clubs como array, tomar el primero
-  const clubs = userMembership.clubs as any
-  const clubSlug = (Array.isArray(clubs) ? clubs[0]?.slug : clubs?.slug) || ''
+  // Supabase puede retornar clubs como objeto o array según la relación; normalizamos
+  const clubs = userMembership.clubs as { slug: string } | { slug: string }[] | null
+  const clubSlug = (Array.isArray(clubs) ? clubs[0]?.slug : clubs?.slug) ?? ''
 
   // 3. Consultar todos los miembros del club con sus perfiles
   const { data: clubMembers } = await supabase
